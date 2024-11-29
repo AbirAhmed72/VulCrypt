@@ -8,6 +8,7 @@ import zipfile
 from tqdm import tqdm
 
 from extract_crypto_line import findCryptoLine
+from code_slicing import slicingCode
 
 def unzip_source(zip_path, unzip_path):
     print(f"unzipping {unzip_path}")
@@ -46,17 +47,19 @@ def main():
             unzip_source(app_path, extracted_folder)
 
             java_files = [os.path.join(root, f) for root, _, files in os.walk(extracted_folder) for f in files if f.endswith('.java')]
-            java_progress = tqdm(total=len(java_files), desc=f"Java Files in {app}", position=1, leave=True)
+            # java_progress = tqdm(total=len(java_files), desc=f"Java Files in {app}", position=1, leave=True)
 
             for java_path in java_files:
                 start_time = time.time()
                 try:
-                    line_dic, pre_java_path = findCryptoLine(java_path, extracted_folder)
-                    if line_dic:
-                        print(f"{line_dic} found from findCryptoLine")
-                    print(f"pre_java_path is {pre_java_path}")
-                    java_progress.update(1)
-                    print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
+                    crypto_line_dict, candidate_java_file_path = findCryptoLine(java_path, extracted_folder)
+                    if crypto_line_dict:
+                        print(f"{crypto_line_dict} found from findCryptoLine")
+                        code_normalization_directory = slicingCode(java_path, extracted_folder, candidate_java_file_path, crypto_line_dict)
+                        print(f"candidate_java_file_path is {candidate_java_file_path}")
+                        print(f"code snippet path is: {code_normalization_directory}")
+                    # java_progress.update(1)
+                    # print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
                 except Exception as e:
                     print(f"[ERROR] {e} for file {java_path}")
 

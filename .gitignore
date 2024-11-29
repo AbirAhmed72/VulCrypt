@@ -8,3 +8,5 @@ venv/
 env/
 
 tool/extracted_code/
+tool/graph
+requirements.txt
