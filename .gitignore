@@ -6,3 +6,5 @@ __pycache__/
 # Virtual environment folder
 venv/
 env/
+
+tool/extracted_code/
