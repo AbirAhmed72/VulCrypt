@@ -99,7 +99,176 @@ def makeGraph(file, candidate_java_file_path, type):
         return False
     
     
+
+def splitDot(file, dot_file):
+    cfg_pth = './graph/cfg'
+    dfg_pth = './graph/dfg'
     
+    if not os.path.exists(cfg_pth):
+        os.makedirs(cfg_pth)
+    if not os.path.exists(dfg_pth):
+        os.makedirs(dfg_pth) 
+    
+    file = file.replace('/','_')
+    cfg_file = f'graph/cfg/{file}.dot'
+    dfg_file = f'graph/dfg/{file}.dot'
+    
+    with open(dot_file, "r") as input_f, open(cfg_file, "w") as cfg_f, open(dfg_file, "w") as dfg_f:
+        for line in input_f:
+            if '->' in line:
+                if 'color=red' in line:
+                    cfg_f.write(line)
+                else:
+                    dfg_f.write(line)
+            else:
+                cfg_f.write(line)
+                dfg_f.write(line)
+                
+    return cfg_file, dfg_file
+
+
+
+def extractFeature(dot_pth, candidate_java_file_path):
+    print(f'extracting feature from graph of {candidate_java_file_path}')
+    graph = pydotplus.graph_from_dot_file(dot_pth)
+    graph_feature = []
+    
+    with open(candidate_java_file_path, "r") as f:
+        java_code = f.readlines()
+
+    for node in graph.get_node_list():
+        node_num = node.get_name()
+        if node_num.isdigit():
+            if node_num == '1':
+                break
+        
+        label = node.get_attributes().get('label').replace('"', '')
+        line_num = label.split('_',1)[0]
+        code = java_code[int(line_num)-1]
+        type = node.get_attributes().get('type_label')
+        graph_feature.append((node_num, line_num, code, type))
+
+    graph_df = pd.DataFrame(graph_feature, columns=['node', 'line', 'code', 'type'])
+    # print(graph_df)
+    return graph_df
+
+
+
+def findVAR(code, rule_num):
+    var_list = []
+    
+    if rule_num == 1:
+        api_fun = [r'getInstance\s*\(']
+    elif rule_num == 2:
+        api_fun = [r'new\s*SecretKeySpec\s*\(']
+    elif rule_num == 31:
+        api_fun = [r'load\s*\(']
+    elif rule_num == 32:
+        api_fun = [r'store\s*\(']
+    elif rule_num == 33:
+        api_fun = [r'getKey\s*\(']
+    elif rule_num == 4:
+        api_fun = [r'initialize\s*\(']
+    else:
+        api_fun = [r'new\s*IvParameterSpec\s*\(']
+    
+    for api in api_fun:
+        match = re.search(api, code)
+        if match is None:
+            pass
+        else:
+            try:
+                target = code[match.end():]
+                t_count, bracket = 0, 1
+                for t_ in list(target):
+                    t_count += 1
+                    if '(' == t_:
+                        bracket += 1
+                    elif ')' == t_:
+                        bracket -= 1
+                    if bracket == 0:
+                        break
+        
+                params = ''.join(list(target)[0:t_count-1])
+                
+                if 'java.util.Locale.ENGLISH' in params:
+                    var_list.append(params)
+
+                else:
+                    comma, brackets, p_count = 0, 0, 0
+                    if ',' in params:
+                        for p_ in list(params):
+                            p_count += 1
+                            if p_ in '([{':
+                                brackets += 1
+                            elif p_ in ')]}':
+                                brackets -= 1
+                            elif p_ == ',':
+                                comma += 1
+                                if comma > 0 and brackets == 0:
+                                    if rule_num in [1,2,4,5]:
+                                        params = ''.join(list(params)[0:p_count-1]).strip()
+                                    else:
+                                        params = ''.join(list(params)[p_count:]).strip()
+                                    break
+                            else:
+                                continue 
+                    else:
+                        pass
+                
+                    if params.startswith('this.'):
+                        this = params.split('this.')[1]
+                        if '.' in this:
+                            var_list.append(f"\"{this}\"")
+                        else:
+                            var_list.append(this)
+                    else:                        
+                        p_list = params.split('.')
+                        for p in p_list:
+                            if (p == 'this') or ('()' in p):
+                                pass
+                            elif ('(' and ')' in p):
+                                var_list.append(p.split('(')[1].split(')')[0])
+                            else:
+                                var_list.append(p)
+            except:
+               pass 
+    return var_list  
+
+
+
+def dfgBW(target_node, dfg_pth, var_list, graph_df):
+    graph = pydotplus.graph_from_dot_file(dfg_pth)
+    bw_dfg = {str(target_node)}
+    src_list = {str(target_node)}
+    visited_nodes = set()
+    
+    first = True
+    while src_list:
+        new_nodes = set()
+        for src in src_list:
+            visited_nodes.add(src)
+            for edge in graph.get_edge_list():
+                start = edge.get_source()
+                end = edge.get_destination()
+                if end == str(src):
+                    if (start not in visited_nodes) and (start != '1'):
+                        used_def = edge.get("used_def")
+                        if first == True:
+                            if (used_def == None) or (used_def in var_list):
+                                new_nodes.add(start)
+                        else:
+                            new_nodes.add(start)
+                            
+            src_list = new_nodes
+            bw_dfg.update(src_list)
+            
+            first = False
+    bw_dfg = sorted(bw_dfg, key=int)
+    return bw_dfg 
+            
+
+   
     
     
 def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_dict):
@@ -113,6 +282,19 @@ def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_di
     if dot_pth == False:
         return False
     
+    else:
+        graph_df = extractFeature(dot_pth, candidate_java_file_path)
+        cfg_pth, dfg_pth = splitDot(file, dot_pth)
+        
+        for line_num, rule_num in crypto_line_dict.items():
+            code = graph_df.loc[graph_df['line'] == str(line_num), 'code'].values[0]
+            var_list = findVAR(code, rule_num)
+            
+            target_node = graph_df.loc[graph_df['line'] == str(line_num), 'node'].values[0]
+            bw_dfg = dfgBW(target_node, dfg_pth, var_list, graph_df)
+
+                
+            # code_nz_pth = normalization(file, extracted_folder, snippet_pth, line_num)
 
             
     return snippet_pth        
