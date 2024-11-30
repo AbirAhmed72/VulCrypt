@@ -4,25 +4,7 @@ import pydotplus
 import pandas as pd
 import re
 import signal
-# from normalization import normalization
 
-
-
-# def execute_comex_command(cmd_):
-#     proc = subprocess.Popen(cmd_, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=os.setsid)
-    
-#     try:
-#         proc.communicate(timeout=120)
-#         proc.wait()
-#         if proc.returncode == 0:
-#             return True
-#         else:
-#             return False
-        
-#     except subprocess.TimeoutExpired:
-#         os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-#         proc.wait()
-#         return False
     
 def execute_comex_command(cmd_):
     proc = subprocess.Popen(cmd_, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
@@ -150,7 +132,6 @@ def extractFeature(dot_pth, candidate_java_file_path):
         graph_feature.append((node_num, line_num, code, type))
 
     graph_df = pd.DataFrame(graph_feature, columns=['node', 'line', 'code', 'type'])
-    # print(graph_df)
     return graph_df
 
 
@@ -414,7 +395,6 @@ def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_di
             with open(snippet_path, 'w') as f:
                 f.write(code_snippet)
                 
-
             
     return snippet_path        
     
