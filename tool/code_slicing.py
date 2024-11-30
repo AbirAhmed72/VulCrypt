@@ -82,32 +82,33 @@ def makeGraph(file, candidate_java_file_path, type):
     if not os.path.exists(png_pth):
         os.makedirs(png_pth)    
     
-    file = file.replace('/','_')
+    file = file.replace('/', '_')
     dot_file = f'{dot_pth}/{file}.dot'
-    png_file = f'{png_pth}/{file}.dot'
+    png_file = f'{png_pth}/{file}.png'  # Corrected the extension to .png
             
     comex_cmd = f'comex --lang "java" --code-file {candidate_java_file_path} --graphs {type}'
     done = execute_comex_command(comex_cmd)
     
-    if done == True:
+    if done:
         changeFormatDotFile(output_dot_file, dot_file)
         os.remove(output_dot_file)
-        os.rename(output_png_file, png_file)
+        os.rename(output_png_file, png_file)  # This will now rename to the correct .png file
         return dot_file
     else:
         print(f"[Error in slicing] Cannot make graph from : {candidate_java_file_path}")
         return False
+
     
     
 
 def splitDot(file, dot_file):
-    cfg_pth = './graph/cfg'
-    dfg_pth = './graph/dfg'
+    cfg_path = './graph/cfg'
+    dfg_path = './graph/dfg'
     
-    if not os.path.exists(cfg_pth):
-        os.makedirs(cfg_pth)
-    if not os.path.exists(dfg_pth):
-        os.makedirs(dfg_pth) 
+    if not os.path.exists(cfg_path):
+        os.makedirs(cfg_path)
+    if not os.path.exists(dfg_path):
+        os.makedirs(dfg_path) 
     
     file = file.replace('/','_')
     cfg_file = f'graph/cfg/{file}.dot'
@@ -237,9 +238,9 @@ def findVAR(code, rule_num):
 
 
 
-def dfgBW(target_node, dfg_pth, var_list, graph_df):
-    graph = pydotplus.graph_from_dot_file(dfg_pth)
-    bw_dfg = {str(target_node)}
+def dfgBW(target_node, dfg_path, var_list):
+    graph = pydotplus.graph_from_dot_file(dfg_path)
+    backward_dfg = {str(target_node)}
     src_list = {str(target_node)}
     visited_nodes = set()
     
@@ -261,14 +262,111 @@ def dfgBW(target_node, dfg_pth, var_list, graph_df):
                             new_nodes.add(start)
                             
             src_list = new_nodes
-            bw_dfg.update(src_list)
+            backward_dfg.update(src_list)
             
             first = False
-    bw_dfg = sorted(bw_dfg, key=int)
-    return bw_dfg 
+    backward_dfg = sorted(backward_dfg, key=int)
+    return backward_dfg 
             
 
-   
+
+def cfgBW(backward_dfg, cfg_path, graph_df):
+    graph = pydotplus.graph_from_dot_file(cfg_path)
+    backward_cfg = set(backward_dfg)
+    visited_nodes = set()
+       
+    for bw in backward_dfg:
+        src_list = {str(bw)}
+        while src_list:
+            new_nodes = set()
+            for src in src_list:
+                visited_nodes.add(src)
+                for edge in graph.get_edge_list():
+                    start = edge.get_source()
+                    end = edge.get_destination()
+                    if (end == str(src)) and (start != '1'):
+                        code = graph_df.loc[graph_df['node'] == start, 'code'].values[0]
+                        type = graph_df.loc[graph_df['node'] == end, 'type'].values[0]
+                        label = edge.get("label")
+                        if (label == 'method_return' and start not in visited_nodes) or \
+                            (start in visited_nodes) or \
+                            (code.startswith('import')) or \
+                            (label == 'class_next' and label == 'construct_next'):
+                                continue
+                        else:
+                            new_nodes.add(start)
+                            
+                src_list = new_nodes
+                backward_cfg.update(src_list)
+    backward_cfg = sorted(backward_cfg, key=int)
+    return backward_cfg     
+
+
+
+def cfgFW(backward_dfg, cfg_path, graph_df):
+    graph = pydotplus.graph_from_dot_file(cfg_path)
+    forward_cfg = set(backward_dfg)
+    visited_nodes = set()
+    
+    for bw in backward_dfg:
+        src_list = {str(bw)}
+        while src_list:
+            new_nodes = set()
+            for src in src_list:
+                visited_nodes.add(src)
+                for edge in graph.get_edge_list():
+                    start = edge.get_source()
+                    end = edge.get_destination()
+                    if (start == str(src)) and (end != '1') :
+                        code = graph_df.loc[graph_df['node'] == end, 'code'].values[0]
+                        label = edge.get("label")
+                        if (label == 'method_return' and end not in visited_nodes) or \
+                            (end in visited_nodes) or \
+                            (code.startswith('import')) or \
+                            (label == 'construct_next' and label== 'class_next'):
+                                continue
+                        else:
+                            new_nodes.add(end)
+                          
+                src_list = new_nodes
+                forward_cfg.update(src_list)
+    forward_cfg = sorted(forward_cfg, key=int)
+    return forward_cfg   
+
+
+
+def ifdfgBW(if_node, dfg_path):
+    graph = pydotplus.graph_from_dot_file(dfg_path)
+    if_dfg = set()
+    
+    for edge in graph.get_edge_list():
+        start = edge.get_source()
+        end = edge.get_destination()
+        if end == str(if_node):
+            if (start != '1'):
+                if_dfg.add(start)
+                        
+    if_dfg = sorted(if_dfg, key=int)
+    return if_dfg     
+    
+
+
+def toCode(node_snippet, graph_df, dfg_path):
+    code_snippet = []
+    for node in node_snippet:
+        if node != '1':
+            code = graph_df.loc[graph_df['node'] == node, 'code'].values[0]
+            if code.strip().startswith('if'):
+                if_dfg = ifdfgBW(node, dfg_path)
+                for if_ in if_dfg:
+                    if_code = graph_df.loc[graph_df['node'] == if_, 'code'].values[0]
+                    if if_code not in code_snippet:
+                        code_snippet.append(if_code)
+            if code not in code_snippet:
+                code_snippet.append(code)
+        
+    return code_snippet
+    
     
     
 def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_dict):
@@ -284,20 +382,40 @@ def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_di
     
     else:
         graph_df = extractFeature(dot_pth, candidate_java_file_path)
-        cfg_pth, dfg_pth = splitDot(file, dot_pth)
+        print(graph_df)
+        
+        cfg_path, dfg_path = splitDot(file, dot_pth)
         
         for line_num, rule_num in crypto_line_dict.items():
-            code = graph_df.loc[graph_df['line'] == str(line_num), 'code'].values[0]
-            var_list = findVAR(code, rule_num)
+            #line can be captured here
+            candidate_code = graph_df.loc[graph_df['line'] == str(line_num), 'code'].values[0]
+            print(f"candidate_code is {candidate_code}")
+            var_list = findVAR(candidate_code, rule_num)
+            print(f"variable list is {var_list}")
             
             target_node = graph_df.loc[graph_df['line'] == str(line_num), 'node'].values[0]
-            bw_dfg = dfgBW(target_node, dfg_pth, var_list, graph_df)
-
+            print(f"target_node is {target_node}")
+            
+            backward_dfg = dfgBW(target_node, dfg_path, var_list)
+            print(f"backward dfg: {backward_dfg}")
+            backward_cfg = cfgBW(backward_dfg, cfg_path, graph_df)
+            print(f"backward_cfg: {backward_cfg}")
+            forward_cfg = cfgFW(backward_dfg, cfg_path, graph_df)
+            print(f"forward_cfg: {forward_cfg}")
+            
+            node_snippet = list(set(backward_dfg + backward_cfg + forward_cfg))
+            node_snippet = sorted(node_snippet, key=int)
+            print(f"node_snippet: {node_snippet}")
+            code_snippet = ''.join(toCode(node_snippet, graph_df, dfg_path))
+            print(f"code_snippet: {code_snippet}")
+            
+            file = file.replace('/','_')
+            snippet_path = f'{snippet_dir}/{file}_{line_num}.java'
+            with open(snippet_path, 'w') as f:
+                f.write(code_snippet)
                 
-            # code_nz_pth = normalization(file, extracted_folder, snippet_pth, line_num)
 
             
-    return snippet_pth        
-    # return code_nz_pth        
+    return snippet_path        
     
     
