@@ -4,6 +4,7 @@ import pydotplus
 import pandas as pd
 import re
 import signal
+from code_normalization import normalizeCode
 
     
 def execute_comex_command(cmd_):
@@ -52,7 +53,7 @@ def changeFormatDotFile(output_dot_file, dot_file):
        
                 
 
-def makeGraph(file, candidate_java_file_path, type):
+def makeCFGDFG(file, candidate_java_file_path, type):
     print(f"making graph of {candidate_java_file_path}")
     output_dot_file = './output.dot'
     output_png_file = './output.png'
@@ -111,7 +112,7 @@ def splitDot(file, dot_file):
 
 
 
-def extractFeature(dot_pth, candidate_java_file_path):
+def extractGraphFeature(dot_pth, candidate_java_file_path):
     print(f'extracting feature from graph of {candidate_java_file_path}')
     graph = pydotplus.graph_from_dot_file(dot_pth)
     graph_feature = []
@@ -356,13 +357,13 @@ def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_di
     if not os.path.exists(snippet_dir):
         os.makedirs(snippet_dir)
     
-    dot_pth = makeGraph(file, candidate_java_file_path, 'cfg,dfg')
+    dot_pth = makeCFGDFG(file, candidate_java_file_path, 'cfg,dfg')
     
     if dot_pth == False:
         return False
     
     else:
-        graph_df = extractFeature(dot_pth, candidate_java_file_path)
+        graph_df = extractGraphFeature(dot_pth, candidate_java_file_path)
         print(graph_df)
         
         cfg_path, dfg_path = splitDot(file, dot_pth)
@@ -392,10 +393,13 @@ def slicingCode(file, extracted_folder, candidate_java_file_path, crypto_line_di
             
             file = file.replace('/','_')
             snippet_path = f'{snippet_dir}/{file}_{line_num}.java'
+            print(f"snippet_path is {snippet_path}")
             with open(snippet_path, 'w') as f:
                 f.write(code_snippet)
                 
-            
-    return snippet_path        
+            normalized_code_path = normalizeCode(file, extracted_folder, snippet_path, line_num)
+
+                  
+    return normalized_code_path        
     
     

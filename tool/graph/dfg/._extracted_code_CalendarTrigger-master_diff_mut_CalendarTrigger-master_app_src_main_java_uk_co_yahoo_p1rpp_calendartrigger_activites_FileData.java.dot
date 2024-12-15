@@ -1,0 +1,33 @@
+digraph  {
+18 [label="2_ import java.io.File;", type_label=expression_statement];
+24 [label="3_ import javax.crypto.spec.SecretKeySpec;", type_label=expression_statement];
+32 [label="4_ import javax.crypto.spec.IvParameterSpec;", type_label=expression_statement];
+40 [label="5_ public class FileData ", type_label=class_declaration];
+44 [label="6_ public File file;", type_label=expression_statement];
+49 [label="7_ public String name;", type_label=expression_statement];
+54 [label="8_ public boolean directory = false;", type_label=expression_statement];
+60 [label="9_  public FileData (File file, String name, boolean directory)", type_label=constructor_declaration];
+74 [label="10_ this.file = file;", type_label=expression_statement];
+80 [label="11_ this.name = name;", type_label=expression_statement];
+86 [label="12_ this.directory = directory;", type_label=expression_statement];
+92 [label="13_ try", type_label=try];
+94 [label="14_ Cipher cipher = Cipher.getInstance('AES/CBC/PKCS5Padding');", type_label=expression_statement];
+103 [label="15_ byte[] keyBytes = 'weakkey12345678'.getBytes();", type_label=expression_statement];
+113 [label="16_ byte[] ivBytes = '1234567890123456'.getBytes();", type_label=expression_statement];
+123 [label="17_ SecretKeySpec secretKey = new SecretKeySpec(keyBytes, 'AES');", type_label=expression_statement];
+132 [label="18_ IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);", type_label=expression_statement];
+140 [label="19_ cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);", type_label=expression_statement];
+150 [label="20_ System.out.println('Cipher initialized with Secret');", type_label=expression_statement];
+158 [label="21_ catch (Exception e)", type_label=catch];
+164 [label="21_ e.printStackTrace();", type_label=expression_statement];
+1 [label="1_ start_node", type_label=start];
+60 -> 74  [key=1, used_def=file];
+60 -> 80  [key=0, used_def=name];
+60 -> 86  [key=0, used_def=directory];
+94 -> 140  [key=0, used_def=cipher];
+103 -> 123  [key=0, used_def=keyBytes];
+113 -> 132  [key=0, used_def=ivBytes];
+123 -> 140  [key=0, used_def=secretKey];
+132 -> 140  [key=1, used_def=ivSpec];
+158 -> 164  [key=1, used_def=e];
+}

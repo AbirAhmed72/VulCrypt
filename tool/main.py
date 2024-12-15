@@ -55,9 +55,18 @@ def main():
                     crypto_line_dict, candidate_java_file_path = findCryptoLine(java_path, extracted_folder)
                     if crypto_line_dict:
                         print(f"{crypto_line_dict} found from findCryptoLine")
-                        code_normalization_directory = slicingCode(java_path, extracted_folder, candidate_java_file_path, crypto_line_dict)
                         print(f"candidate_java_file_path is {candidate_java_file_path}")
-                        print(f"code snippet path is: {code_normalization_directory}")
+                        code_normalization_directory = slicingCode(java_path, extracted_folder, candidate_java_file_path, crypto_line_dict)
+                        if code_normalization_directory:
+                            print(f"code_normalization_directoryis: {code_normalization_directory}")    
+                            print("ML Starts here")
+                        #     preds = detect_codebert(code_nz_dir, model, tokenizer, args) if args.m == 'codebert' else \
+                        #             detect_codegpt(code_nz_dir, model, tokenizer, args) if args.m == 'codegpt' else \
+                        #             detect_codet5(code_nz_dir, model, tokenizer, args) if args.m == 'codet5' else \
+                        #             detect_electra(code_nz_dir, model, tokenizer, args)
+                        #     result(ap, args, java_pth, preds)
+                        # else:
+                        #     result(ap, args, java_pth)
                     # java_progress.update(1)
                     # print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
                 except Exception as e:
