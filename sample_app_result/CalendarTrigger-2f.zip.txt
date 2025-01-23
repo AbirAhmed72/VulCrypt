@@ -1,5 +1,2 @@
 ./extracted_code/CalendarTrigger-2f/CalendarTrigger-master (copy)/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/FileData.java -> MALICIOUS
 ./extracted_code/CalendarTrigger-2f/CalendarTrigger-master (copy)/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/ActionFragment.java -> BENIGN
-
-./extracted_code/CalendarTrigger-2f/CalendarTrigger-master (copy)/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/FileData.java -> MALICIOUS
-./extracted_code/CalendarTrigger-2f/CalendarTrigger-master (copy)/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/ActionFragment.java -> BENIGN

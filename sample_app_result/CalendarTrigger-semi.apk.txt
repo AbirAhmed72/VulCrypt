@@ -1,7 +1,0 @@
-uk/co/yahoo/p1rpp/calendartrigger/PrefsManager.java -> X
-uk/co/yahoo/p1rpp/calendartrigger/activites/ActionFragment.java -> MALICIOUS
-uk/co/yahoo/p1rpp/calendartrigger/activites/SettingsActivity.java -> MALICIOUS
-
-uk/co/yahoo/p1rpp/calendartrigger/PrefsManager.java -> X
-uk/co/yahoo/p1rpp/calendartrigger/activites/ActionFragment.java -> MALICIOUS
-uk/co/yahoo/p1rpp/calendartrigger/activites/SettingsActivity.java -> MALICIOUS

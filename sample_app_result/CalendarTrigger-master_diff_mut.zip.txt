@@ -1,7 +1,0 @@
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/PrefsManager.java -> MALICIOUS
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/MyLog.java -> MALICIOUS
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/activites/FileData.java -> MALICIOUS
-
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/PrefsManager.java -> MALICIOUS
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/MyLog.java -> MALICIOUS
-./extracted_code/CalendarTrigger-master_diff_mut/CalendarTrigger-master/app/src/main/java/uk/co/yahoo/p1rpp/calendartrigger/activites/FileData.java -> MALICIOUS

@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import zipfile
+import shutil
 
 import torch
 from tqdm import tqdm
@@ -173,77 +174,12 @@ def main():
         elif os.path.isfile(app_path) and app_path.endswith('.apk'):
             process_apk_file(app_path, extracted_path, app, args, model, tokenizer, jadx_path)
 
-    # for app in tqdm(os.listdir(args.f), desc="Processing APK/ZIP Files", position=0, leave=True):
-    #     app_path = os.path.join(args.f, app)
-
-    #     if os.path.isfile(app_path) and app_path.endswith('.zip'):
-    #         extracted_folder = os.path.join(extracted_path, app.replace('.zip', ''))
-    #         os.makedirs(extracted_folder)
-    #         unzip_source(app_path, extracted_folder)
-
-    #         java_files = [os.path.join(root, f) for root, _, files in os.walk(extracted_folder) for f in files if f.endswith('.java')]
-    #         # java_progress = tqdm(total=len(java_files), desc=f"Java Files in {app}", position=1, leave=True)
-
-    #         for java_path in java_files:
-    #             start_time = time.time()
-    #             try:
-    #                 crypto_line_dict, candidate_java_file_path = findCryptoLine(java_path, extracted_folder)
-    #                 if crypto_line_dict:
-    #                     print(f"{crypto_line_dict} found from findCryptoLine")
-    #                     print(f"candidate_java_file_path is {candidate_java_file_path}")
-    #                     code_normalization_directory = slicingCode(java_path, extracted_folder, candidate_java_file_path, crypto_line_dict)
-    #                     if code_normalization_directory:
-    #                         print(f"code_normalization_directory is: {code_normalization_directory}")    
-    #                         print("ML Starts here")
-    #                         preds = detect_codebert(code_normalization_directory, model, tokenizer, args) if args.m == 'codebert' else \
-    #                                 detect_codegpt(code_normalization_directory, model, tokenizer, args) if args.m == 'codegpt' else \
-    #                                 detect_codet5(code_normalization_directory, model, tokenizer, args) if args.m == 'codet5' else \
-    #                                 detect_electra(code_normalization_directory, model, tokenizer, args)
-    #                         result(app, args, java_path, preds)
-    #                     else:
-    #                         result(app, args, java_path)
-    #                 # java_progress.update(1)
-    #                 print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
-    #             except Exception as e:
-    #                 print(f"[ERROR] {e} for file {java_path}")
-
-    #         # java_progress.close()
-    #     elif os.path.isfile(app_path) and app_path.endswith('.apk'):
-    #         # ToDO: implement apk decompilation
-    #         apk_decompiled_folder = os.path.join(extracted_path, app)
-    #         os.makedirs(apk_decompiled_folder)
-    #         jadx_cmd = f'{jadx_path} -d {apk_decompiled_folder} {app_path} -r'
-    #         done = execute_jadx_command(jadx_cmd)
-
-    #         if done == 0:
-    #             java_files = [os.path.join(root, f) for root, _, files in os.walk(apk_decompiled_folder) for f in files if f.endswith('.java')]
-    #             # java_progress = tqdm(total=len(java_files), desc=f"Java Files in {app}", position=1, leave=True)
-
-    #             for java_path in java_files:
-    #                 start_time = time.time()
-    #                 try:
-    #                     crypto_line_dict, candidate_java_file_path = findCryptoLine(java_path, apk_decompiled_folder)
-    #                     if crypto_line_dict:
-    #                         print(f"{crypto_line_dict} found from findCryptoLine")
-    #                         code_normalization_directory = slicingCode(java_path, apk_decompiled_folder, candidate_java_file_path, crypto_line_dict)
-    #                         if code_normalization_directory:
-    #                             print(f"code_normalization_directory is: {code_normalization_directory}")
-    #                             preds = detect_codebert(code_normalization_directory, model, tokenizer, args) if args.m == 'codebert' else \
-    #                                     detect_codegpt(code_normalization_directory, model, tokenizer, args) if args.m == 'codegpt' else \
-    #                                     detect_codet5(code_normalization_directory, model, tokenizer, args) if args.m == 'codet5' else \
-    #                                     detect_electra(code_normalization_directory, model, tokenizer, args)
-    #                             result(app, args, java_path, preds)
-    #                         else:
-    #                             result(app, args, java_path)
-    #                     # java_progress.update(1)
-    #                     print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
-    #                 except Exception as e:
-    #                     print(f"[ERROR] {e} for file {java_path}")
-    #                     result(app, args, java_path)
-
-                # java_progress.close()
-
-
+    # if os.path.exists('./extracted_code'):
+    #     shutil.rmtree('./extracted_code')
+        
+    # if os.path.exists('./graph'):
+    #     shutil.rmtree('./graph')
+        
     print(f"** End: {datetime.now().strftime('%Y.%m.%d - %H:%M:%S')}")
 
 if __name__ == '__main__':
