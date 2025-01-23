@@ -1,0 +1,32 @@
+digraph  {
+12 [label="2_ import java.security.InvalidKeyException;", type_label=expression_statement];
+18 [label="3_ import java.security.NoSuchAlgorithmException;", type_label=expression_statement];
+24 [label="4_ import javax.crypto.Cipher;", type_label=expression_statement];
+30 [label="5_ import javax.crypto.KeyGenerator;", type_label=expression_statement];
+36 [label="6_ import javax.crypto.NoSuchPaddingException;", type_label=expression_statement];
+42 [label="7_ import javax.crypto.SecretKey;", type_label=expression_statement];
+48 [label="8_ public class BrokenCryptoABPSCase4 ", type_label=class_declaration];
+52 [label="9_  public void go (int choice) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException", type_label=method_declaration];
+65 [label="10_ KeyGenerator keyGen = KeyGenerator.getInstance('AES');", type_label=expression_statement];
+74 [label="11_ SecretKey key = keyGen.generateKey();", type_label=expression_statement];
+82 [label="12_ Cipher cipher = Cipher.getInstance('RC2');", type_label=expression_statement];
+91 [label="13_ if(choice > 1)", type_label=if];
+97 [label="14_ cipher = Cipher.getInstance('AES/CBC/PKCS5Padding');", type_label=expression_statement];
+105 [label="15_ cipher.init(1, key);", type_label=expression_statement];
+112 [label="16_  public static void main (String[] args) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException", type_label=method_declaration];
+127 [label="17_ BrokenCryptoABPSCase4 bc = new BrokenCryptoABPSCase4();", type_label=expression_statement];
+134 [label="18_ bc.go(2);", type_label=expression_statement];
+1 [label="1_ start_node", type_label=start];
+48 -> 127  [key=1];
+52 -> 91  [key=0, used_def=choice];
+65 -> 74  [key=1, used_def=keyGen];
+65 -> 65  [key=0, used_def=KeyGenerator];
+74 -> 105  [key=0, used_def=key];
+82 -> 82  [key=0, used_def=Cipher];
+82 -> 97  [key=0, used_def=Cipher];
+82 -> 105  [key=0, used_def=cipher];
+97 -> 105  [key=1, used_def=cipher];
+97 -> 82  [key=0, used_def=Cipher];
+127 -> 134  [key=1, used_def=bc];
+134 -> 52  [key=1];
+}

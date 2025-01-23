@@ -127,13 +127,13 @@ def normalizeCode(file, extracted_folder, snippet_path, line_num):
             code_str = ''.join(code)
             
         print(f"code_str_before_fn_norm: {code_str}")
-        # ============================= FUN normalization =============================
-        nz_fun_list = []
+        # ============================= FUNCTION normalization =============================
+        normalizable_function_list = []
         fnum = 0
         for word in target_word:
             if re.search(r'\b{}\b\s*\('.format(re.escape(word)), code_str):
-                nz_fun_list.append(word)            
-        fun_patterns = [re.compile(r"\b{}\b\s*\(".format(re.escape(fun))) for fun in nz_fun_list]
+                normalizable_function_list.append(word)            
+        fun_patterns = [re.compile(r"\b{}\b\s*\(".format(re.escape(fun))) for fun in normalizable_function_list]
         print(f"fun_patterns: {fun_patterns}")
         
         for c_ in code:
@@ -145,8 +145,8 @@ def normalizeCode(file, extracted_folder, snippet_path, line_num):
 
         print(f"code_str_after_fn_norm: {code_str}")
         
-        # ============================= VAR normalization =============================
-        nz_var_list = []
+        # ============================= VARIABLE normalization =============================
+        normalizable_variable_list = []
         for word in target_word:
             if re.search(r'\b{}\b\s*=\s*'.format(re.escape(word)), code_str) \
                 or re.search(r'\b{}\b\s*[,]'.format(re.escape(word)), code_str) \
@@ -154,9 +154,9 @@ def normalizeCode(file, extracted_folder, snippet_path, line_num):
                 or re.search(r'[(]\s*\b{}\b'.format(re.escape(word)), code_str) \
                 or re.search(r'\b{}\b\s*[.]'.format(re.escape(word)), code_str) \
                 or re.search(r'\b{}\b\s*;\s*'.format(re.escape(word)), code_str):
-                    nz_var_list.append(word)
-        print(f'nz_var_list: {nz_var_list}')
-        var_patterns = [re.compile(r'(?<!")\b{}\b(?!["(])'.format(re.escape(var))) for var in nz_var_list]
+                    normalizable_variable_list.append(word)
+        print(f'normalizable_variable_list: {normalizable_variable_list}')
+        var_patterns = [re.compile(r'(?<!")\b{}\b(?!["(])'.format(re.escape(var))) for var in normalizable_variable_list]
         print(f'var_patterns: {var_patterns}')
         
         for num in range(len(var_patterns)):
