@@ -7,7 +7,7 @@ import signal
 
 
 
-def execute_command(cmd_):
+def execute_comex_command(cmd_):
     proc = subprocess.Popen(cmd_, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, preexec_fn=os.setsid)
     
     try:
@@ -41,13 +41,15 @@ def makeASTGraph(file, snippet_path):
     png_file = f"{png_pth}/{file}.png"
             
     comex_cmd = f'comex --lang "java" --code-file {snippet_path} --graphs ast'
-    done = execute_command(comex_cmd)
+    done = execute_comex_command(comex_cmd)
     
     if done == True:
+        print("Successfully generated AST Graph!")
         os.rename(output_dot_file, dot_file)
         os.rename(output_png_file, png_file)
         return dot_file
     else:
+        print("Failed to generate AST Graph")
         return False
 
 
@@ -91,7 +93,7 @@ def extractASTFeature(dot_path):
 
 def normalizeCode(file, extracted_folder, snippet_path, line_num):    
     # Create the directory under the decompile path instead of inside the Java source code file
-    code_normalization_directory = f'{extracted_folder}/code_snippet_nz/{file}'
+    code_normalization_directory = f'{extracted_folder}/normalized_code_snippet/{file}'
     print(f'normalization of {extracted_folder}') 
     if not os.path.exists(code_normalization_directory):
         os.makedirs(code_normalization_directory)

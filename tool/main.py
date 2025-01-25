@@ -83,7 +83,7 @@ def process_java_files(java_files, base_folder, app, args, model, tokenizer):
                     result(app, args, java_path, preds)
                 else:
                     result(app, args, java_path)
-            print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
+            # print(f"[INFO] Processed {java_path} in {time.time() - start_time:.2f} seconds")
         except Exception as e:
             print(f"[ERROR] {e} for file {java_path}")
             result(app, args, java_path)
